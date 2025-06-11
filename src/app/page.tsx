@@ -106,10 +106,10 @@ export default function Home() {
           }
           try {
             const dt = {
-              userId: 'shaka-nextjs-userid',
-              sessionId: 'shaka-nextjs-userid',
-              merchantId: 'sigma_packager_lite',
-              appId: 'demo',
+              userId: 'userId',
+              sessionId: 'sessionId',
+              merchantId: 'merchantId',
+              appId: 'appId',
             };
             request.uris = [licenseURL];
             request.method = 'POST';
