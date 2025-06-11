@@ -4,7 +4,7 @@
 import Head from 'next/head';
 import Script from 'next/script';
 import { useCallback, useEffect, useRef } from 'react';
- export const UI_CONFIG_NORMAL: object = {
+export const UI_CONFIG_NORMAL: object = {
   addSeekBar: false,
   controlPanelElements: [
     'play_pause',
@@ -61,8 +61,8 @@ export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
 
-const initFairPlaySigma = useCallback(() => {
-    fetch("https://cert.sigmadrm.com/app/fairplay/sigma_packager_lite/demo")
+  const initFairPlaySigma = useCallback(() => {
+    fetch('CERTIFICATE_URL')
       .then((res) => res.arrayBuffer())
       .then((res: any) => {
         let contentId: any;
@@ -70,11 +70,10 @@ const initFairPlaySigma = useCallback(() => {
         playerRef.current.configure({
           drm: {
             servers: {
-              "com.apple.fps.1_0":
-                "https://license.sigmadrm.com/license/verify/fairplay",
+              'com.apple.fps.1_0': 'LICENSE_URL',
             },
             advanced: {
-              "com.apple.fps.1_0": {
+              'com.apple.fps.1_0': {
                 serverCertificate: new Uint8Array(res),
               },
             },
@@ -82,21 +81,21 @@ const initFairPlaySigma = useCallback(() => {
         });
 
         playerRef.current.configure(
-          "drm.initDataTransform",
+          'drm.initDataTransform',
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           (initData: any, type: any, drmInfo: any) => {
-            if (type != "skd") return initData;
+            if (type != 'skd') return initData;
             const skdURL =
               window.shaka.util.StringUtils.fromBytesAutoDetect(initData);
-            contentId = new URL(skdURL).searchParams.get("assetId");
+            contentId = new URL(skdURL).searchParams.get('assetId');
             const cert = playerRef.current.drmInfo().serverCertificate;
-            licenseURL = skdURL.replace("skd://", "https://");
+            licenseURL = skdURL.replace('skd://', 'https://');
             return window.shaka.util.FairPlayUtils.initDataTransform(
               initData,
               contentId,
-              cert
+              cert,
             );
-          }
+          },
         );
         const networkingEngine = playerRef.current.getNetworkingEngine();
         networkingEngine.clearAllRequestFilters();
@@ -107,19 +106,19 @@ const initFairPlaySigma = useCallback(() => {
           }
           try {
             const dt = {
-              userId: "shaka-nextjs-userid",
-              sessionId: "shaka-nextjs-userid",
-              merchantId: "sigma_packager_lite",
-              appId: "demo",
+              userId: 'shaka-nextjs-userid',
+              sessionId: 'shaka-nextjs-userid',
+              merchantId: 'sigma_packager_lite',
+              appId: 'demo',
             };
             request.uris = [licenseURL];
-            request.method = "POST";
-            request.headers["Content-Type"] = "application/json";
-            request.headers["custom-data"] = btoa(JSON.stringify(dt));
+            request.method = 'POST';
+            request.headers['Content-Type'] = 'application/json';
+            request.headers['custom-data'] = btoa(JSON.stringify(dt));
             const originalPayload = new Uint8Array(request.body);
             const base64Payload =
               window.shaka.util.Uint8ArrayUtils.toStandardBase64(
-                originalPayload
+                originalPayload,
               );
             request.body = JSON.stringify({
               spc: base64Payload,
@@ -137,7 +136,7 @@ const initFairPlaySigma = useCallback(() => {
               // This is the wrapped license, which is a JSON string.
               try {
                 const wrappedString = window.shaka.util.StringUtils.fromUTF8(
-                  response.data
+                  response.data,
                 );
                 // Parse the JSON string into an object.
                 const wrapped = JSON.parse(wrappedString);
@@ -146,20 +145,18 @@ const initFairPlaySigma = useCallback(() => {
                 // Decode that base64 string into a Uint8Array and replace the response
                 response.data =
                   window.shaka.util.Uint8ArrayUtils.fromBase64(
-                    rawLicenseBase64
+                    rawLicenseBase64,
                   );
               } catch {}
             }
           });
 
         playerRef.current
-          .load(
-            'https://sdrm-test.gviet.vn/static/vod_production/big_bug_bunny_multikey/master.m3u8',
-          )
+          .load('HLS_MANIFEST')
           .catch((e: Error) => console.error('Error loading video', e));
       })
       .catch((err) => {
-        console.log("ERRORS_SIGMA: ", err.message);
+        console.log('ERRORS_SIGMA: ', err.message);
       });
   }, [playerRef]);
   const init = async () => {
@@ -181,7 +178,7 @@ const initFairPlaySigma = useCallback(() => {
     if (!window.shaka.Player.isBrowserSupported()) {
       console.error('Shaka Player not supported in this browser');
       return;
-    } 
+    }
     const player = new window.shaka.Player();
     await player.attach(videoRef.current);
     playerRef.current = player;
@@ -198,12 +195,11 @@ const initFairPlaySigma = useCallback(() => {
     //   .insert('vi', new Map(Object.entries(UI_LOCALIZATION)));
 
     initFairPlaySigma();
-    
-  }
+  };
 
   useEffect(() => {
-     init()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initFairPlaySigma]);
 
   return (
@@ -217,7 +213,7 @@ const initFairPlaySigma = useCallback(() => {
           referrerPolicy="no-referrer"
         />
       </Head>
-       
+
       <Script
         src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.12.6/shaka-player.compiled.debug.min.js"
         integrity="sha512-OMtkz3+rKoMVfpCFmlRGzpUT+xPG/zl8vXTogYclD7z15zrHOGsIyGnMpZkuwSFY2Mv73CL2aunkERBzmSxoqA=="
